@@ -225,4 +225,4 @@ async def call_users():
 
 app.mount(
     "/"
-    , StaticFiles(directory="/Users/mikomaks/Desktop/Programowanie/Projekty/SecretSanta APP/secretsantafront/build/web", html=True), name="frontend")
+    , StaticFiles(directory="/home/mikomaks/Desktop/SecretSantaAPP/secretsantafront/build/web", html=True), name="frontend")
