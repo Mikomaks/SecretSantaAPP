@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:email_validator/email_validator.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_launcher_icons/constants.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -614,49 +616,53 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
           ),
         ),
       ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: DecoratedBox(
-          position: DecorationPosition.foreground,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: Theme.of(context).colorScheme.primaryContainer,
-              width: 2,
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: DecoratedBox(
+            position: DecorationPosition.foreground,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(
+                color: Theme.of(context).colorScheme.primaryContainer,
+                width: 2,
+              ),
             ),
-          ),
-          child: SizedBox(
-            height: 56,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Color(0xFFE7E6)),
-              onLongPress: startDraws,
-              onPressed: () => {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      "Hold me longer :)",
-                      textAlign: TextAlign.center,
+            child: SizedBox(
+              height: 56,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Color(0xFFE7E6),
+                ),
+                onLongPress: startDraws,
+                onPressed: () => {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        "Hold me longer :)",
+                        textAlign: TextAlign.center,
+                      ),
+                      duration: Duration(seconds: 1),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      width: 200,
+                      behavior: SnackBarBehavior.floating,
                     ),
-                    duration: Duration(seconds: 1),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    width: 200,
-                    behavior: SnackBarBehavior.floating,
                   ),
+                },
+                child: Text(
+                  resultsPresent ? "Re-shuffle gifts" : "Start gift shuffle",
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontFamily: "Monocraft",
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.9),
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-              },
-              child: Text(
-                resultsPresent ? "Re-shuffle gifts" : "Start gift shuffle",
-                style: TextStyle(
-                  fontSize: 20,
-                  fontFamily: "Monocraft",
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.onSurface.withValues(alpha: 0.9),
-                ),
-                textAlign: TextAlign.center,
               ),
             ),
           ),
@@ -1171,6 +1177,23 @@ class _ResultsPageState extends State<ResultsPage> {
                           : validName!
                           ? showUserMailSwitch
                           : null,
+                      onLongPress: () {
+                        Clipboard.setData(ClipboardData(text: receiverEmail));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              "Copied email: $receiverEmail",
+                              textAlign: TextAlign.center,
+                            ),
+                            duration: Duration(seconds: 1),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            width: 200,
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      },
                       label: Text(receiverNameOrEmail),
                       icon: receiverNameOrEmail == receiverName
                           ? Icon(Icons.person)
