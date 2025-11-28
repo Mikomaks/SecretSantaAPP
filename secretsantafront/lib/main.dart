@@ -82,6 +82,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     fetchUsers();
+    fetchResults();
 
     auto_update.stream.listen((message) {
       print(message);
@@ -269,6 +270,33 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         );
       },
     );
+  }
+
+  Future<void> fetchResults() async {
+    final url = Uri.parse('$apiUrl/results');
+
+    try {
+      var response = await http.get(
+        url,
+        headers: {"ngrok-skip-browser-warning": "true"},
+      );
+      final decoded = jsonDecode(response.body);
+
+      if (decoded is String) {
+        setState(() {
+          resultsPresent = false;
+        });
+      } else if (decoded is Map<String, dynamic>) {
+        results = decoded.map(
+          (key, value) => MapEntry(int.parse(key), value as int),
+        );
+        setState(() {
+          resultsPresent = true;
+        });
+      }
+    } catch (e) {
+      print('Error occurred while getting draws: $e');
+    }
   }
 
   Future<void> startDraws() async {
@@ -729,6 +757,14 @@ class _ResultsPageState extends State<ResultsPage> {
     }
   }
 
+  Timer? _nameDebounce;
+  final nameController = TextEditingController();
+  bool? validName;
+  bool gifterBoolean = false;
+  String receiverName = "";
+  String receiverNameOrEmail = "";
+  String receiverEmail = "";
+
   int get revealModeIndex {
     if (mode == ResultsMode.menuView) {
       return 0;
@@ -750,6 +786,57 @@ class _ResultsPageState extends State<ResultsPage> {
   }
 
   ResultsMode mode = ResultsMode.menuView;
+
+  bool checkIfUserExists(String name) {
+    final List<String> userNames = widget.users.map((u) => u.name).toList();
+
+    return userNames.contains(name);
+  }
+
+  void showUsersDraw() {
+    String gifterName = nameController.text.trim();
+
+    if (!checkIfUserExists(gifterName)) {
+      setState(() {
+        validName = false;
+        gifterBoolean = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Bad name!", textAlign: TextAlign.center),
+          duration: Duration(seconds: 1),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          width: 200,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } else {
+      final gifterUser = widget.users.firstWhere((u) => u.name == gifterName);
+      final gifterId = gifterUser.id;
+
+      final receiverId = widget.results[gifterId];
+      final receiverUser = widget.users.firstWhere((u) => u.id == receiverId);
+
+      setState(() {
+        nameController
+            .clear(); //we hide the giver name to not reveal by mistake (giver knows he is giver duh)
+        validName = true;
+        gifterBoolean = true;
+        receiverName = receiverUser.name;
+        receiverNameOrEmail = receiverName;
+        receiverEmail = receiverUser.email;
+      });
+    }
+  }
+
+  void showUserMailSwitch() {
+    print("switch called");
+    setState(() {
+      receiverNameOrEmail = (receiverNameOrEmail == receiverName
+          ? receiverEmail
+          : receiverName);
+    });
+  }
 
   Widget buildMenuView() {
     return LayoutBuilder(
@@ -950,53 +1037,168 @@ class _ResultsPageState extends State<ResultsPage> {
   }
 
   Widget buildPassThePhone() {
-    return Container(
-      child: Center(
-        child: Column(
-          children: [
-            SizedBox(
-              width: 400,
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.center,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: Theme.of(context).colorScheme.primaryContainer,
-                      width: 4,
-                    ),
-                    borderRadius: BorderRadius.circular(8),
+    void onNameChanged(String value) {
+      _nameDebounce?.cancel();
+      _nameDebounce = Timer(const Duration(milliseconds: 200), () {
+        var namegood = value.isNotEmpty && checkIfUserExists(value);
+        //   if (nameEmpty) {
+        //     print("Name is empty!");
+        //   }
+
+        setState(() {
+          validName = namegood ? true : false;
+          gifterBoolean = false;
+        });
+      });
+    }
+
+    return Center(
+      child: Column(
+        spacing: 10.0,
+        children: [
+          SizedBox(
+            width: 600,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.center,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.primaryContainer,
+                    width: 4,
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.only(right: 20, left: 20),
-                    child: Text(
-                      "Pass the phone mode",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontFamily: "Monocraft",
-                        fontWeight: FontWeight.bold,
-                        fontSize: 60,
-                      ),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 20, left: 20),
+                  child: Text(
+                    "Pass the phone mode",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontFamily: "Monocraft",
+                      fontWeight: FontWeight.bold,
+                      fontSize: 100,
                     ),
                   ),
                 ),
               ),
             ),
-            // Visibility(
-            //   visible: true,
-            //   child: Row(
-            //     children: [
-            //       TextField(
-            //         controller: null,
-            //         decoration: InputDecoration(labelText: 'Name'),
-            //       ),
+          ),
+          Row(
+            spacing: 10.0,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Flexible(
+                fit: FlexFit.loose,
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: 320),
+                  child: TextField(
+                    onChanged: onNameChanged,
+                    controller: nameController,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                      errorBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.red),
+                      ),
+                      labelText: 'Name',
+                      labelStyle: validName == null
+                          ? null
+                          : TextStyle(
+                              color: validName!
+                                  ? Theme.of(context).colorScheme.onSurface
+                                  : Colors.red,
+                            ),
+                      suffixIcon: validName == null
+                          ? null
+                          : (validName!
+                                ? Icon(Icons.check, color: Colors.green)
+                                : Icon(Icons.error, color: Colors.red)),
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(
+                height: 56,
 
-            //       ElevatedButton(onPressed: () => {}, child: Text("Guzik")),
-            //     ],
-            //   ),
-            // ),
-          ],
-        ),
+                child: ElevatedButton(
+                  onPressed: (validName == null)
+                      ? null
+                      : validName!
+                      ? showUsersDraw
+                      : null,
+                  child: Icon(
+                    Icons.add,
+                    color: (validName == null)
+                        ? Theme.of(context).colorScheme.onSurface
+                        : validName!
+                        ? Colors.green
+                        : Colors.red,
+                    size: 28,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          Visibility(
+            visible: gifterBoolean,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(
+                  width: 400,
+                  height: 50,
+                  child: Container(
+                    padding: EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment(0.0, 0.01),
+                        colors: [
+                          Color(0xFFFF0000),
+                          Colors.white,
+                          Color(0xFFFF0000),
+                          Colors.white,
+                        ],
+                        stops: [0.0, 0.5, 0.5, 1.0],
+                        tileMode: TileMode.repeated,
+                        transform: GradientRotation(-0.5),
+                      ),
+                      borderRadius: BorderRadius.circular(50),
+                    ),
+                    child: ElevatedButton.icon(
+                      onPressed: (validName == null)
+                          ? null
+                          : validName!
+                          ? showUserMailSwitch
+                          : null,
+                      label: Text(receiverNameOrEmail),
+                      icon: receiverNameOrEmail == receiverName
+                          ? Icon(Icons.person)
+                          : Icon(Icons.email),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(right: 10),
+            child: SizedBox(
+              width: 150,
+              child: ElevatedButton(
+                child: Text(
+                  "Return",
+                  style: TextStyle(fontFamily: "Monocraft", fontSize: 15),
+                ),
+                onPressed: () {
+                  setState(() {
+                    mode = ResultsMode.menuView;
+                  });
+                },
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -1051,5 +1253,11 @@ class _ResultsPageState extends State<ResultsPage> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    nameController.dispose();
   }
 }
