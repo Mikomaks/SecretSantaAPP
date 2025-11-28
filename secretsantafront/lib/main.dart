@@ -762,7 +762,7 @@ class _ResultsPageState extends State<ResultsPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
-            spacing: 10,
+            spacing: 10.0,
             children: [
               SizedBox(
                 width: buttonWidth,
@@ -950,7 +950,54 @@ class _ResultsPageState extends State<ResultsPage> {
   }
 
   Widget buildPassThePhone() {
-    return Column();
+    return Center(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          SizedBox(
+            width: 400,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.center,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.primaryContainer,
+                    width: 4,
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 20, left: 20),
+                  child: Text(
+                    "Pass the phone mode",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontFamily: "Monocraft",
+                      fontWeight: FontWeight.bold,
+                      fontSize: 60,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Visibility(
+            visible: true,
+            child: Row(
+              children: [
+                TextField(
+                  controller: null,
+                  decoration: InputDecoration(labelText: 'Name'),
+                ),
+
+                ElevatedButton(onPressed: () => {}, child: Text("Guzik")),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
