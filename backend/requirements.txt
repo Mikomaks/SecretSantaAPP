@@ -4,3 +4,4 @@ python-dotenv
 pydantic
 python-multipart
 starlette
+pydantic[email]
