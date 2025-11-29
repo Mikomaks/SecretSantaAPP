@@ -56,11 +56,11 @@ This project was created to practice:
 ---
 
 ## 📂 Project Structure  
-SecretSantaAPP/
+``SecretSantaAPP/
 ├─ secretsantafront/ # Flutter frontend source code
 ├─ backend/ # FastAPI backend
 ├─ users.db # SQLite database
-└─ README.md
+└─ README.md``
 
 ---
 
@@ -75,29 +75,36 @@ Backend will be available at:
 http://127.0.0.1:8000
 
 ## ** 2. Run the frontend **
-cd secretsantafront
+``cd secretsantafront
 flutter pub get
-flutter run
+flutter run``
 For Flutter Web:
-flutter run -d chrome
+``flutter run -d chrome``
 
 
 ## 🔌 API Endpoints
-**Users**
-Method	Endpoint	            Description
-GET	    /users	              Get all users
-GET	    /users/{id}	          Get user by ID
-POST	  /users	              Add new user
-DELETE	/users/remove/{id}	  Remove user
 
-**Results**
-Method	Endpoint	        Description
-POST	   /results	        Save generated pairings
-GET	     /results	        Get saved results
-DELETE	 /results/clear	  Clear all results
+### **Users**
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET    | `/users` | Get all users |
+| GET    | `/users/{id}` | Get user by ID |
+| POST   | `/users` | Add new user |
+| DELETE | `/users/remove/{id}` | Remove user |
 
-**WebSocket**
-/auto_update
+---
+
+### **Results**
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST   | `/results` | Save generated pairings |
+| GET    | `/results` | Get saved results |
+| DELETE | `/results/clear` | Clear all results |
+
+---
+
+### **WebSocket**
+`/auto_update`
 Used for real-time updates for all connected clients.
 
 
