@@ -55,12 +55,24 @@ This project was created to practice:
 
 ---
 
-## 📂 Project Structure  
-``SecretSantaAPP/
-├─ secretsantafront/ # Flutter frontend source code
-├─ backend/ # FastAPI backend
-├─ users.db # SQLite database
-└─ README.md``
+## 📂 Project Structure
+
+    SecretSantaAPP/
+    ├─ backend/                 # FastAPI backend
+    │  ├─ main.py               # Backend entry point
+    │  ├─ users.db              # SQLite database
+    │  ├─ requirements.txt      # Backend dependencies
+    │  └─ ...                   # Other backend files
+    │
+    ├─ secretsantafront/        # Flutter frontend
+    │  ├─ lib/
+    │  │  ├─ main.dart          # App entry point
+    │  │  └─ ...                # UI, logic, widgets, etc.
+    │  ├─ pubspec.yaml          # Flutter dependencies
+    │  └─ ...                   # Other frontend files
+    │
+    └─ README.md                # Project documentation
+
 
 ---
 
